@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.DeepnewsMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.Deepnews" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="pic" property="pic" jdbcType="VARCHAR" />
+    <result column="browser_count" property="browserCount" jdbcType="INTEGER" />
+    <result column="publish_status" property="publishStatus" jdbcType="CHAR" />
+    <result column="publish_by" property="publishBy" jdbcType="VARCHAR" />
+    <result column="publish_logo" property="publishLogo" jdbcType="VARCHAR" />
+    <result column="publish_time" property="publishTime" jdbcType="TIMESTAMP" />
+    <result column="sn_from" property="snFrom" jdbcType="VARCHAR" />
+    <result column="sn_author" property="snAuthor" jdbcType="VARCHAR" />
+    <result column="sn_compile" property="snCompile" jdbcType="VARCHAR" />
+    <result column="top_flag" property="topFlag" jdbcType="CHAR" />
+    <result column="create_by" property="createBy" jdbcType="CHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="CHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+    <result column="content" property="content" jdbcType="LONGVARCHAR" />
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+    <result column="logo_url" property="logoUrl" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, title, pic, browser_count, content, publish_status, publish_by, publish_logo, publish_time, 
+    sn_from,sn_author,sn_compile, top_flag, create_by, create_time, update_by, update_time, deleted_flag
+  </sql>
+  <sql id="Base_Column_List_Extend" >
+    a.id, a.title, a.pic, a.browser_count, a.content, a.publish_status, a.publish_by, a.publish_logo, a.publish_time,
+    a.sn_from,sn_author,sn_compile, a.top_flag, a.create_by, a.create_time, a.update_by, a.update_time, a.deleted_flag
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	SELECT
+	<include refid="Base_Column_List_Extend" />,b.uri as pic_url,c.uri as logo_url
+	FROM t_deepnews a
+	left join t_file_record b on a.pic = b.id
+	left join t_file_record c on a.publish_logo = c.id
+	<where>
+		a.id=#{id,jdbcType=VARCHAR}
+	</where>
+  </select>
+  <select id="selectDeepnewsListFront" resultMap="BaseResultMap">
+  	select a.id,a.title,a.pic,b.uri as pic_url,a.top_flag ,a.publish_by ,a.browser_count 
+  	from t_deepnews a
+  	left join t_file_record b on a.pic=b.id
+   	where a.deleted_flag='n' and a.publish_status = '1'
+  	order by a.top_flag desc,a.create_time desc
+  </select>
+  <select id="selectDeepnewsList" resultMap="BaseResultMap">
+  	select a.id,a.title,a.pic,b.uri as pic_url,a.top_flag,a.browser_count,a.publish_by,a.publish_logo,a.publish_time,
+  		a.publish_status,a.create_time,a.update_time
+  	from t_deepnews a
+  	left join t_file_record b on a.pic=b.id
+  	where a.deleted_flag='n'
+  	order by a.create_time desc
+  </select>
+  <select id="selectDeepnewsDetail" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	select tb1.*
+	from(
+		select tb.*,@rank := @rank + 1 as rank
+	  	from(
+	  		select a.id,a.title,a.publish_by ,a.publish_logo , b.uri as logo_url,a.content,a.sn_from ,a.sn_author ,a.sn_compile ,a.publish_time
+	  		from t_deepnews a
+	  		left join t_file_record b on a.publish_logo = b.id
+			order by a.create_time desc
+	  	) tb,
+	  	(select @rank := 0) r
+	) tb1
+	where tb1.id=#{id,jdbcType=CHAR}
+  </select>
+  <select id="selectDeepnewsNext" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	select tb.*
+	from (
+		select t.*,@rank := @rank + 1 as rank
+		from (
+			select a.id,a.title,a.pic,b.uri as pic_url
+			from t_deepnews a
+			left join t_file_record b on a.pic = b.id
+			where a.deleted_flag='n'
+			order by a.create_time desc
+		) t,
+		(select @rank := 0) r
+	) tb
+	where rank <![CDATA[<]]> #{rank} and id != #{id,jdbcType=CHAR}
+	limit 1
+  </select>
+  
+  <insert id="insertSelective" parameterType="ksd.binews.entity.Deepnews" >
+    insert into t_deepnews
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="pic != null" >
+        pic,
+      </if>
+      <if test="browserCount != null" >
+        browser_count,
+      </if>
+      <if test="publishStatus != null" >
+        publish_status,
+      </if>
+      <if test="publishBy != null" >
+        publish_by,
+      </if>
+      <if test="publishLogo != null" >
+        publish_logo,
+      </if>
+      <if test="publishTime != null" >
+        publish_time,
+      </if>
+      <if test="snFrom != null" >
+        sn_from,
+      </if>
+      <if test="snAuthor != null" >
+        sn_author,
+      </if>
+      <if test="snCompile != null" >
+        sn_compile,
+      </if>
+      <if test="topFlag != null" >
+        top_flag,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateBy != null" >
+        update_by,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag,
+      </if>
+      <if test="content != null" >
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="pic != null" >
+        #{pic,jdbcType=VARCHAR},
+      </if>
+      <if test="browserCount != null" >
+        #{browserCount,jdbcType=INTEGER},
+      </if>
+      <if test="publishStatus != null" >
+        #{publishStatus,jdbcType=CHAR},
+      </if>
+      <if test="publishBy != null" >
+        #{publishBy,jdbcType=VARCHAR},
+      </if>
+      <if test="publishLogo != null" >
+        #{publishLogo,jdbcType=VARCHAR},
+      </if>
+      <if test="publishTime != null" >
+        #{publishTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="snFrom != null" >
+        #{snFrom,jdbcType=VARCHAR},
+      </if>
+      <if test="snAuthor != null" >
+        #{snAuthor,jdbcType=VARCHAR},
+      </if>
+      <if test="snCompile != null" >
+        #{snCompile,jdbcType=VARCHAR},
+      </if>
+      <if test="topFlag != null" >
+        #{topFlag,jdbcType=CHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=CHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        #{deletedFlag,jdbcType=CHAR},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateBrowserCount" parameterType="java.lang.String">
+  	update t_deepnews set browser_count = browser_count + 1
+  	where id=#{id,jdbcType=CHAR}
+  </update>
+  <update id="deleteByPrimaryKey" parameterType="java.lang.String">
+	update t_deepnews set deleted_flag = 'y'
+  	where id=#{id,jdbcType=CHAR}
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Deepnews" >
+    update t_deepnews
+    <set >
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="pic != null" >
+        pic = #{pic,jdbcType=VARCHAR},
+      </if>
+      <if test="browserCount != null" >
+        browser_count = #{browserCount,jdbcType=INTEGER},
+      </if>
+      <if test="publishStatus != null" >
+        publish_status = #{publishStatus,jdbcType=CHAR},
+      </if>
+      <if test="publishBy != null" >
+        publish_by = #{publishBy,jdbcType=VARCHAR},
+      </if>
+      <if test="publishLogo != null" >
+        publish_logo = #{publishLogo,jdbcType=VARCHAR},
+      </if>
+      <!-- <if test="publishTime != null" >
+        publish_time = #{publishTime,jdbcType=TIMESTAMP},
+      </if> -->
+      <if test="snFrom != null" >
+        sn_from = #{snFrom,jdbcType=VARCHAR},
+      </if>
+      <if test="snAuthor != null" >
+        sn_author = #{snAuthor,jdbcType=VARCHAR},
+      </if>
+      <if test="snCompile != null" >
+        sn_compile = #{snCompile,jdbcType=VARCHAR},
+      </if>
+      <if test="topFlag != null" >
+        top_flag = #{topFlag,jdbcType=CHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        update_by = #{updateBy,jdbcType=CHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag = #{deletedFlag,jdbcType=CHAR},
+      </if>
+      <if test="content != null" >
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

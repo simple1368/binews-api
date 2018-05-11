@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.PlatformCoinMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.PlatformCoin">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="platform_id" property="platformId" jdbcType="CHAR" />
+		<result column="coin_id" property="coinId" jdbcType="CHAR" />
+		<result column="quote_currency_id" property="quoteCurrencyId" jdbcType="CHAR" />
+		<result column="create_by" property="createBy" jdbcType="CHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_by" property="updateBy" jdbcType="CHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+	</resultMap>
+	<resultMap type="ksd.binews.entity.PlatformCoinExtends" id="BaseResultMapExtends" extends="BaseResultMap">
+		<result column="baseCurrency" property="baseCurrency" jdbcType="VARCHAR" />
+		<result column="quoteCurrency" property="quoteCurrency" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, platform_id, coin_id, quote_currency_id, create_by, create_time,
+		update_by, update_time, deleted_flag
+	</sql>
+	<sql id="Base_Column_List_Extends">
+		a.id, a.platform_id, a.coin_id, a.quote_currency_id, a.create_by, a.create_time,
+		a.update_by, a.update_time, a.deleted_flag
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from t_platform_coin
+		where id = #{id,jdbcType=CHAR}
+	</select>
+	<select id="selectListByCondition" resultMap="BaseResultMapExtends" parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List_Extends" />,b.code as baseCurrency,d.code as quoteCurrency
+		from t_platform_coin a
+		inner join t_coin b on a.coin_id = b.id and b.deleted_flag = 'n'
+		inner join t_platform c on a.platform_id = c.id and c.deleted_flag = 'n'
+		inner join t_quote_currency d on a.quote_currency_id = d.id and d.deleted_flag = 'n'
+		<where>
+			<if test="platformId != null">
+				and a.platform_id = #{platformId,jdbcType=CHAR}
+			</if>
+			<if test="coinId != null">
+				and a.coin_id = #{coinId,jdbcType=CHAR}
+			</if>
+			<if test="baseCurrency != null">
+				and b.code = #{baseCurrency,jdbcType=CHAR}
+			</if>
+			<if test="quoteCurrencyId != null">
+				and a.quote_currency_id = #{quoteCurrencyId,jdbcType=CHAR}
+			</if>
+			<if test="quoteCurrency != null">
+				and d.code = #{quoteCurrency,jdbcType=CHAR}
+			</if>
+			<if test="deletedFlag != null">
+				and a.deleted_flag = #{deletedFlag,jdbcType=CHAR}
+			</if>
+		</where>
+	</select>
+	<insert id="insertPlatformCoinBatch" parameterType="ksd.binews.entity.PlatformCoin">
+		insert into t_platform_coin(id, platform_id, coin_id, quote_currency_id, create_time, deleted_flag)
+		values
+		<foreach collection="list" item="item" index="index" separator=",">
+			(
+				#{item.id,jdbcType=CHAR},
+				#{item.platformId,jdbcType=CHAR},
+				#{item.coinId,jdbcType=CHAR},
+				#{item.quoteCurrencyId,jdbcType=CHAR},
+				#{item.createTime,jdbcType=TIMESTAMP},
+				#{item.deletedFlag,jdbcType=CHAR}
+			)
+		</foreach>
+	</insert>
+	<insert id="insert" parameterType="ksd.binews.entity.PlatformCoin">
+		insert into t_platform_coin (id, platform_id, coin_id,
+		quote_currency_id, create_by, create_time,
+		update_by, update_time, deleted_flag
+		)
+		values (#{id,jdbcType=CHAR}, #{platformId,jdbcType=CHAR},
+		#{coinId,jdbcType=CHAR},
+		#{quoteCurrencyId,jdbcType=CHAR}, #{createBy,jdbcType=CHAR}, #{createTime,jdbcType=TIMESTAMP},
+		#{updateBy,jdbcType=CHAR}, #{updateTime,jdbcType=TIMESTAMP},
+		#{deletedFlag,jdbcType=CHAR}
+		)
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.PlatformCoin">
+		update t_platform_coin
+		<set>
+			<if test="platformId != null">
+				platform_id = #{platformId,jdbcType=CHAR},
+			</if>
+			<if test="coinId != null">
+				coin_id = #{coinId,jdbcType=CHAR},
+			</if>
+			<if test="quoteCurrencyId != null">
+				quote_currency_id = #{quoteCurrencyId,jdbcType=CHAR},
+			</if>
+			<if test="createBy != null">
+				create_by = #{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				update_by = #{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.DigitCurrencyMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.DigitCurrency">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="CHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_by" property="updateBy" jdbcType="CHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, code, create_by, create_time, update_by, update_time, deleted_flag
+	</sql>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from t_digit_currency
+		where id = #{id,jdbcType=CHAR}
+	</select>
+	<select id="selectNavCurrency" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select b.id, b.code
+		from t_nav_currency a 
+		left join t_digit_currency b on a.digit_currency_id=b.id and b.deleted_flag = 'n'
+		where a.nav_id=#{id} and a.deleted_flag='n'
+	</select>
+	<select id="selectList" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from t_digit_currency
+		where deleted_flag='n'
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<insert id="insertBatch" parameterType="ksd.binews.entity.NavCurrency">
+		insert into
+		t_digit_currency(id,code,create_by,create_time,deleted_flag)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.id},
+			#{item.code},
+			#{item.createBy},
+			#{item.createTime},
+			#{item.deletedFlag})
+		</foreach>
+	</insert>
+</mapper>

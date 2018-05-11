@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.QuoteCurrencyMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.QuoteCurrency" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, code, create_time, deleted_flag
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_quote_currency
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <select id="selectListByCondition" resultMap="BaseResultMap" parameterType="java.util.Map">
+  	select 
+    <include refid="Base_Column_List" />
+    from t_quote_currency
+    <where>
+    	<if test="id != null">
+			and id = #{id,jdbcType=CHAR}
+		</if>
+		<if test="code != null">
+			and code = #{code,jdbcType=VARCHAR}
+		</if>
+		<if test="deletedFlag != null">
+			and deleted_flag = #{deletedFlag,jdbcType=CHAR}
+		</if>
+    </where>
+  </select>
+  <insert id="insertQuoteCurrencyBatch" parameterType="ksd.binews.entity.QuoteCurrency">
+  	insert into t_quote_currency(id,code,create_time,deleted_flag)
+  	values
+  	<foreach collection="list" index="index" item="item" separator=",">
+  		(
+  			#{item.id,jdbcType=CHAR},
+  			#{item.code,jdbcType=VARCHAR},
+  			#{item.createTime,jdbcType=TIMESTAMP},
+  			#{item.deletedFlag,jdbcType=CHAR}
+  		)
+  	</foreach>
+  </insert> 
+  
+  <insert id="insertSelective" parameterType="ksd.binews.entity.QuoteCurrency" >
+    insert into t_quote_currency
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="code != null" >
+        code,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="code != null" >
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.QuoteCurrency" >
+    update t_quote_currency
+    <set >
+      <if test="code != null" >
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag = #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

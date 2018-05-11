@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.FileRecordMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.FileRecord" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="file_name" property="fileName" jdbcType="VARCHAR" />
+    <result column="suffix" property="suffix" jdbcType="VARCHAR" />
+    <result column="file_size" property="fileSize" jdbcType="DECIMAL" />
+    <result column="uri" property="uri" jdbcType="VARCHAR" />
+    <result column="new_file_name" property="newFileName" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, file_name, suffix, file_size, uri, new_file_name, create_time
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_file_record
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <insert id="insertSelective" parameterType="ksd.binews.entity.FileRecord" >
+    insert into t_file_record
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="fileName != null" >
+        file_name,
+      </if>
+      <if test="suffix != null" >
+        suffix,
+      </if>
+      <if test="fileSize != null" >
+        file_size,
+      </if>
+      <if test="uri != null" >
+        uri,
+      </if>
+      <if test="newFileName != null" >
+        new_file_name,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="fileName != null" >
+        #{fileName,jdbcType=VARCHAR},
+      </if>
+      <if test="suffix != null" >
+        #{suffix,jdbcType=VARCHAR},
+      </if>
+      <if test="fileSize != null" >
+        #{fileSize,jdbcType=DECIMAL},
+      </if>
+      <if test="uri != null" >
+        #{uri,jdbcType=VARCHAR},
+      </if>
+      <if test="newFileName != null" >
+        #{newFileName,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+</mapper>

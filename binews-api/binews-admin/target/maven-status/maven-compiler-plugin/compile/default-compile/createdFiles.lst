@@ -1,0 +1,16 @@
+ksd\binews\controller\PlatformController.class
+ksd\binews\common\LoggerAspect.class
+ksd\binews\controller\AdminController.class
+ksd\binews\controller\GuideArticleController.class
+ksd\binews\interceptor\AuthorizationInterceptor.class
+ksd\binews\GeneralConfig.class
+ksd\binews\controller\NewsController.class
+ksd\binews\controller\UploadController.class
+ksd\binews\controller\CoinController.class
+ksd\binews\controller\CommentsController.class
+ksd\binews\Application.class
+ksd\binews\common\JacksonConfig.class
+ksd\binews\common\WebAppConfig.class
+ksd\binews\controller\NavController.class
+ksd\binews\resolver\CurrentUserMethodArgumentResolver.class
+ksd\binews\controller\DeepnewsController.class

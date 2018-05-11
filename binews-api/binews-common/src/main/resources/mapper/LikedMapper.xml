@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.LikedMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.Liked">
+		<id column="id" jdbcType="CHAR" property="id" />
+		<result column="news_id" jdbcType="CHAR" property="newsId" />
+		<result column="liked_by" jdbcType="CHAR" property="likedBy" />
+		<result column="liked_time" jdbcType="TIMESTAMP" property="likedTime" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTme" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+		<result column="deleted_flag" jdbcType="CHAR" property="deletedFlag" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, news_id, liked_by, liked_time, create_time, update_time, deleted_flag
+	</sql>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_liked
+		where id = #{id,jdbcType=CHAR}
+	</select>
+	
+	<select id="selectUserRecordExist" parameterType="HashMap" resultMap="BaseResultMap">
+		SELECT 
+		<include refid="Base_Column_List" />
+		FROM t_liked
+		<where>
+			news_id=#{newsId} and liked_by=#{likedBy} and deleted_flag='n'
+		</where>
+	</select>
+	
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from t_liked
+		where id = #{id,jdbcType=CHAR}
+	</delete>
+
+	<insert id="insertSelective" parameterType="ksd.binews.entity.Liked">
+		insert into t_liked
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="newsId != null">
+				news_id,
+			</if>
+			<if test="likedBy != null">
+				liked_by,
+			</if>
+			<if test="likedTime != null">
+				liked_time,
+			</if>
+			<if test="createTme != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=CHAR},
+			</if>
+			<if test="newsId != null">
+				#{newsId,jdbcType=CHAR},
+			</if>
+			<if test="likedBy != null">
+				#{likedBy,jdbcType=CHAR},
+			</if>
+			<if test="likedTime != null">
+				#{likedTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTme != null">
+				#{createTme,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				#{deletedFlag,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Liked">
+		update t_liked
+		<set>
+			<if test="newsId != null">
+				news_id = #{newsId,jdbcType=CHAR},
+			</if>
+			<if test="likedBy != null">
+				liked_by = #{likedBy,jdbcType=CHAR},
+			</if>
+			<if test="likedTime != null">
+				liked_time = #{likedTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="createTme != null">
+				create_time = #{createTme,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+</mapper>

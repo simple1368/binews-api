@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.TGuideArticleMapper">
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.TGuideArticle">
+    <id column="id" jdbcType="CHAR" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="sub_title" jdbcType="VARCHAR" property="subTitle" />
+    <result column="publish_by" jdbcType="VARCHAR" property="publishBy" />
+    <result column="publish_time" jdbcType="TIMESTAMP" property="publishTime" />
+    <result column="type" jdbcType="INTEGER" property="type" />
+    <result column="article_type" jdbcType="INTEGER" property="articleType" />
+    <result column="create_by" jdbcType="CHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_by" jdbcType="CHAR" property="updateBy" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="deleted_flag" jdbcType="CHAR" property="deletedFlag" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="ksd.binews.entity.TGuideArticle">
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
+  </resultMap>
+  
+  <select id="list" resultMap="BaseResultMap" parameterType="java.util.Map">
+  	select * from t_guide_article 
+  	where deleted_flag=#{deletedFlag,jdbcType=CHAR} 
+  	<if test="type != null">
+  		and article_type = #{type}
+  	</if>
+  	order by create_time limit #{start,jdbcType=INTEGER},#{end,jdbcType=INTEGER}
+  </select>
+  <select id="countList" resultType="java.lang.Integer" parameterType="java.util.Map">
+  	select COUNT(0) from t_guide_article where deleted_flag=#{deletedFlag,jdbcType=CHAR} order by create_time
+  </select>
+  
+  <select id="getById" parameterType="java.lang.String" resultMap="BaseResultMap">
+  	select * from t_guide_article where id=#{id, jdbcType=CHAR};
+  </select>
+  
+  <insert id="addArticle" parameterType="ksd.binews.entity.TGuideArticle">
+  	insert into t_guide_article values(
+  		#{id, jdbcType=CHAR},
+  		#{title, jdbcType=VARCHAR},
+  		#{subTitle, jdbcType=VARCHAR},
+  		#{publishBy, jdbcType=VARCHAR},
+  		#{publishTime, jdbcType=TIMESTAMP},
+  		#{content, jdbcType=VARCHAR},
+  		#{type, jdbcType=CHAR},
+  		#{articleType, jdbcType=INTEGER},
+  		#{createBy, jdbcType=VARCHAR},
+  		#{createTime, jdbcType=TIMESTAMP},
+  		#{updateBy, jdbcType=VARCHAR},
+  		#{updateTime, jdbcType=TIMESTAMP},
+  		#{deletedFlag, jdbcType=CHAR}
+  	);
+  </insert>
+  
+  <update id="updateArticle" parameterType="ksd.binews.entity.TGuideArticle">
+  	update t_guide_article set
+  	<if test="title != null and title != ''">
+  		title = #{title,jdbcType=VARCHAR},
+  	</if>
+  	<if test="subTitle != null and subTitle != ''">
+  		sub_title = #{subTitle,jdbcType=VARCHAR},
+  	</if>
+  	<if test="publishBy != null and publishBy != ''">
+  		publish_by = #{publishBy,jdbcType=VARCHAR},
+  	</if>
+  	<if test="content != null and content != ''">
+  		content = #{content,jdbcType=VARCHAR},
+  	</if>
+  	<if test="articleType != null">
+  		article_type = #{articleType,jdbcType=INTEGER},
+  	</if>
+  	update_by = #{updateBy, jdbcType=VARCHAR},
+  	update_time = #{updateTime, jdbcType=TIMESTAMP}
+  	where id = #{id, jdbcType=CHAR}
+  </update>
+  
+  <delete id="delArticle" parameterType="java.lang.String">
+  	update t_guide_article set deleted_flag = 'Y' where id = #{id, jdbcType=CHAR} and deleted_flag='N';
+  </delete>
+  
+</mapper>

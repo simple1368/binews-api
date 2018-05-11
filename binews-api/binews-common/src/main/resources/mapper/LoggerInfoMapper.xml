@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.LoggerInfoMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.LoggerInfo">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="client_ip" jdbcType="VARCHAR" property="clientIp" />
+		<result column="uri" jdbcType="VARCHAR" property="uri" />
+		<result column="method" jdbcType="VARCHAR" property="method" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="param_data" jdbcType="LONGVARCHAR" property="paramData" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, client_ip, uri, method, create_time
+		param_data
+	</sql>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_logger_info
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+	<insert id="insertSelective" parameterType="ksd.binews.entity.LoggerInfo">
+		insert into t_logger_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="clientIp != null">
+				client_ip,
+			</if>
+			<if test="uri != null">
+				uri,
+			</if>
+			<if test="method != null">
+				method,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="paramData != null">
+				param_data,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="clientIp != null">
+				#{clientIp,jdbcType=VARCHAR},
+			</if>
+			<if test="uri != null">
+				#{uri,jdbcType=VARCHAR},
+			</if>
+			<if test="method != null">
+				#{method,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="paramData != null">
+				#{paramData,jdbcType=LONGVARCHAR},
+			</if>
+		</trim>
+	</insert>
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.VoteMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.Vote" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="news_id" property="newsId" jdbcType="CHAR" />
+    <result column="uuid" property="uuid" jdbcType="CHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="vote_time" property="voteTime" jdbcType="TIMESTAMP" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, news_id, uuid, type, vote_time, create_time, update_time, deleted_flag
+  </sql>
+  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="ksd.binews.entity.Vote">
+  	select 
+    <include refid="Base_Column_List" />
+    from t_vote
+    <where>
+    	<if test="newsId != null">
+    		and news_id=#{newsId}
+    	</if>
+    	<if test="uuid != null">
+    		and uuid=#{uuid}
+    	</if>
+    	<if test="type != null">
+    		and type=#{type}
+    	</if>
+    	<if test="deletedFlag != null">
+    		and deleted_flag=#{deletedFlag}
+    	</if>
+    </where>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_vote
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <insert id="insertSelective" parameterType="ksd.binews.entity.Vote" >
+    insert into t_vote
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="newsId != null" >
+        news_id,
+      </if>
+      <if test="uuid != null" >
+        uuid,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="voteTime != null" >
+        vote_time,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="newsId != null" >
+        #{newsId,jdbcType=CHAR},
+      </if>
+      <if test="uuid != null" >
+        #{uuid,jdbcType=CHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="voteTime != null" >
+        #{voteTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Vote" >
+    update t_vote
+    <set >
+      <if test="newsId != null" >
+        news_id = #{newsId,jdbcType=CHAR},
+      </if>
+      <if test="uuid != null" >
+        uuid = #{uuid,jdbcType=CHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="voteTime != null" >
+        vote_time = #{voteTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag = #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>

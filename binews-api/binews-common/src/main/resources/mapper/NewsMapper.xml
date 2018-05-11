@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.NewsMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.News">
+		<id column="id" jdbcType="CHAR" property="id" />
+		<result column="title" jdbcType="VARCHAR" property="title" />
+		<result column="content" jdbcType="VARCHAR" property="content" />
+		<result column="publish_status" jdbcType="INTEGER" property="publishStatus" />
+		<result column="publish_time" jdbcType="TIMESTAMP" property="publishTime" />
+		<result column="publish_by" jdbcType="CHAR" property="publishBy" />
+		<result column="liked_flag" jdbcType="CHAR" property="likedFlag" />
+		<result column="comment_flag" jdbcType="CHAR" property="commentFlag" />
+		<result column="share_flag" jdbcType="CHAR" property="shareFlag" />
+		<result column="liked_count" jdbcType="INTEGER" property="likedCount" />
+		<result column="comment_count" jdbcType="INTEGER" property="commentCount" />
+		<result column="share_count" jdbcType="INTEGER" property="shareCount" />
+		<result column="vote_up_count" jdbcType="INTEGER" property="voteUpCount" />
+		<result column="vote_down_count" jdbcType="INTEGER" property="voteDownCount" />
+		<result column="important_flag" jdbcType="CHAR" property="importantFlag" />
+		<result column="create_by" jdbcType="CHAR" property="createBy" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_by" jdbcType="CHAR" property="updateBy" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+		<result column="deleted_flag" jdbcType="CHAR" property="deletedFlag" />
+	</resultMap>
+	<resultMap id="BaseResultMapExpend" type="ksd.binews.entity.NewsExpand" extends="BaseResultMap" >
+		<result column="commented" jdbcType="VARCHAR" property="commented" />
+		<result column="shared" jdbcType="VARCHAR" property="shared" />
+		<result column="liked" jdbcType="VARCHAR" property="liked" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, title, content, publish_status, publish_time,
+		publish_by, liked_flag,
+		comment_flag,
+		share_flag, liked_count,vote_up_count,vote_down_count,
+		comment_count, share_count, important_flag, create_by,
+		create_time,
+		update_by, update_time, deleted_flag
+	</sql>
+
+
+	<select id="selectNewsListFront" parameterType="java.util.Map"
+		resultMap="BaseResultMapExpend">
+		SELECT a.id, a.title, a.content,
+			a.publish_time,
+			a.publish_by ,
+			a.comment_count ,a.share_count ,
+			a.comment_flag ,
+			a.vote_up_count,a.vote_down_count,
+			a.share_flag ,a.important_flag
+		FROM t_news a
+		where a.deleted_flag='n'
+		group by a.id
+		order by a.publish_time desc
+	</select>
+	<select id="selectNewsList" parameterType="java.util.Map"
+		resultMap="BaseResultMapExpend">
+		SELECT a.id, a.title, a.content,
+			a.publish_time,
+			a.publish_by ,
+			a.comment_count ,a.share_count ,
+			a.comment_flag ,
+			a.vote_up_count,a.vote_down_count,
+			a.share_flag ,a.important_flag
+		FROM t_news a
+		where a.deleted_flag='n'
+		<if test="title != null">
+			a.title like concat('%',#{title},'%')
+		</if>
+		<if test="begin != null">
+			a.publish_time <![CDATA[>=]]> #{begin}
+		</if>
+		<if test="end != null">
+			a.publish_time <![CDATA[<=]]> #{end}
+		</if>
+		group by a.id
+		order by a.publish_time desc
+	</select>
+	<select id="CountNewsByCondition" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*)
+		from t_news
+		where deleted_flag='n'
+			and DATE_FORMAT(publish_time,'%Y-%m-%d %H:%i') > DATE_FORMAT(#{time,jdbcType=VARCHAR},'%Y-%m-%d %H:%i')
+	</select>
+
+	<select id="selectNewsByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM t_news
+		<where>
+			id=#{id,jdbcType=VARCHAR}
+		</where>
+	</select>
+	<insert id="insertNews" parameterType="ksd.binews.entity.News">
+		INSERT INTO t_news
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			<if test="title != null and title != ''">
+				title,
+			</if>
+			<if test="content != null and content != ''">
+				content,
+			</if>
+			<if test="publishStatus != null">
+				publish_status,
+			</if>
+			<if test="publishTime != null">
+				publish_time,
+			</if>
+			<if test="publishBy != null and publishBy != ''">
+				publish_by,
+			</if>
+			<if test="likedFlag != null and likedFlag != ''">
+				liked_flag,
+			</if>
+			<if test="commentFlag != null and commentFlag != ''">
+				comment_flag,
+			</if>
+			<if test="shareFlag != null and shareFlag != ''">
+				share_flag,
+			</if>
+			<if test="likedCount != null">
+				liked_count,
+			</if>
+			<if test="commentCount != null">
+				comment_count,
+			</if>
+			<if test="shareCount != null">
+				share_count,
+			</if>
+			<if test="voteUpCount != null">
+				cote_up_count,
+			</if>
+			<if test="voteDownCount != null">
+				vote_down_count,
+			</if>
+			<if test="importantFlag != null and importantFlag != ''">
+				important_flag,
+			</if>
+			<if test="createBy != null and createBy != ''">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateBy != null and updateBy != ''">
+				create_by,
+			</if>
+			<if test="updateTime != null">
+				create_by,
+			</if>
+			<if test="deletedFlag != null and deletedFlag != ''">
+				deleted_flag,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			#{id,jdbcType=VARCHAR},
+			<if test="title != null and title != ''">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null and content != ''">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="publishStatus != null">
+				#{publishStatus,jdbcType=INTEGER},
+			</if>
+			<if test="publishTime != null">
+				#{publishTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="publishBy != null and publishBy != ''">
+				#{publishBy,jdbcType=VARCHAR},
+			</if>
+			<if test="likedFlag != null and likedFlag != ''">
+				#{likedFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="commentFlag != null and commentFlag != ''">
+				#{commentFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="shareFlag != null and shareFlag != ''">
+				#{shareFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="likedCount != null">
+				#{likedCount,jdbcType=INTEGER},
+			</if>
+			<if test="commentCount != null">
+				#{commentCount,jdbcType=INTEGER},
+			</if>
+			<if test="shareCount != null">
+				#{shareCount,jdbcType=INTEGER},
+			</if>
+			<if test="voteUpCount != null">
+				#{voteUpCount,jdbcType=INTEGER},
+			</if>
+			<if test="voteDownCount != null">
+				#{voteDownCount,jdbcType=INTEGER},
+			</if>
+			<if test="importantFlag != null and importantFlag != ''">
+				#{importantFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="createBy != null and createBy != ''">
+				#{createBy,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null and updateBy != ''">
+				#{updateBy,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null and deletedFlag != ''">
+				#{deletedFlag,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.News">
+		update t_news
+		<set>
+			<if test="title != null">
+				title = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				content = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="publishStatus != null">
+				publish_status = #{publishStatus,jdbcType=INTEGER},
+			</if>
+			<if test="publishTime != null">
+				publish_time = #{publishTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="publishBy != null">
+				publish_by = #{publishBy,jdbcType=CHAR},
+			</if>
+			<if test="likedFlag != null">
+				liked_flag = #{likedFlag,jdbcType=CHAR},
+			</if>
+			<if test="commentFlag != null">
+				comment_flag = #{commentFlag,jdbcType=CHAR},
+			</if>
+			<if test="shareFlag != null">
+				share_flag = #{shareFlag,jdbcType=CHAR},
+			</if>
+			<if test="likedCount != null">
+				liked_count = #{likedCount,jdbcType=INTEGER},
+			</if>
+			<if test="commentCount != null">
+				comment_count = #{commentCount,jdbcType=INTEGER},
+			</if>
+			<if test="shareCount != null">
+				share_count = #{shareCount,jdbcType=INTEGER},
+			</if>
+			<if test="voteUpCount != null">
+				vote_up_count = #{voteUpCount,jdbcType=INTEGER},
+			</if>
+			<if test="voteDownCount != null">
+				vote_down_count = #{voteDownCount,jdbcType=INTEGER},
+			</if>
+			<if test="importantFlag != null">
+				important_flag = #{importantFlag,jdbcType=CHAR},
+			</if>
+			<if test="createBy != null">
+				create_by = #{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				update_by = #{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+
+	<update id="updateAttrCount" parameterType="java.util.Map">
+		UPDATE t_news
+		<set>
+			<!-- liked_count -->
+			<if test="attr == 1 and flag > 0">
+				liked_count = liked_count + 1,
+			</if>
+			<if test="attr == 1 and flag &lt; 0">
+				liked_count = liked_count - 1,
+			</if>
+			<!-- comment_count -->
+			<if test="attr == 2 and flag > 0">
+				comment_count = comment_count + 1,
+			</if>
+			<if test="attr == 2 and flag &lt; 0">
+				comment_count = comment_count - 1,
+			</if>
+			<!-- share_count -->
+			<if test="attr == 3 and flag > 0">
+				share_count = share_count + 1,
+			</if>
+			<if test="attr == 3 and flag &lt; 0">
+				share_count = share_count - 1,
+			</if>
+			<!-- vote_up_count -->
+			<if test="attr == 4 and flag > 0">
+				vote_up_count = vote_up_count + 1,
+			</if>
+			<if test="attr == 4 and flag &lt; 0">
+				vote_up_count = vote_up_count - 1,
+			</if>
+			<!-- vote_down_count -->
+			<if test="attr == 5 and flag > 0">
+				vote_down_count = vote_down_count + 1,
+			</if>
+			<if test="attr == 5 and flag &lt; 0">
+				vote_down_count = vote_down_count - 1,
+			</if>
+		</set>
+		<where>
+			id=#{id,jdbcType=VARCHAR}			
+			<!-- liked_count -->
+			<if test="attr == 1 and flag &lt; 0">
+				and liked_count > 0
+			</if>
+			<!-- comment_count -->
+			<if test="attr == 2 and flag &lt; 0">
+				and comment_count > 0
+			</if>
+			<!-- share_count -->
+			<if test="attr == 3 and flag &lt; 0">
+				and share_count > 0
+			</if>
+			<!-- vote_up_count -->
+			<if test="attr == 4 and flag &lt; 0">
+				and vote_up_count > 0
+			</if>
+			<!-- vote_down_count -->
+			<if test="attr == 5 and flag &lt; 0">
+				and vote_down_count > 0
+			</if>
+		</where>
+	</update>
+
+	<update id="deleteNewsByPrimaryKey" parameterType="java.lang.String">
+		UPDATE t_news
+		<set>
+			deleted_flag='y'
+		</set>
+		<where>
+			id=#{id,jdbcType=VARCHAR}
+		</where>
+	</update>
+</mapper>

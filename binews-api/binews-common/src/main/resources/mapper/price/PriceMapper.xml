@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.price.PriceMapper">
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.price.PriceEntity">
+    <id column="id" jdbcType="CHAR" property="id" />
+    <result column="symbol" jdbcType="VARCHAR" property="symbol" />
+    <result column="price" jdbcType="DOUBLE" property="price" />
+    <result column="m_time" jdbcType="BIGINT" property="mTime" />
+    <result column="create_time" jdbcType="BIGINT" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+  	id, symbol, price, m_time, create_time
+  </sql>
+  
+  <select id="listPrice" parameterType="ksd.binews.dto.PriceDto" resultMap="BaseResultMap">
+    select 
+    id, symbol, price, m_time*1000 as m_time, create_time
+    from ${tableName}
+    where 1=1
+    <if test="symbol != null and symbol != ''">
+    	and symbol = #{symbol,jdbcType=CHAR}
+    </if>
+    <if test="sTime > 0">
+    	and m_time &gt;= #{sTime,jdbcType=INTEGER}
+    </if>
+    <if test="eTime > 0">
+    	and m_time &lt;= #{eTime,jdbcType=INTEGER}
+    </if>
+    <if test="type != null">
+    	and type = #{type}
+    </if>
+    order by m_time asc
+  </select>
+</mapper>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.NavCurrencyMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.NavCurrency">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="nav_id" property="navId" jdbcType="CHAR" />
+		<result column="create_by" property="createBy" jdbcType="CHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_by" property="updateBy" jdbcType="CHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+		<result column="digit_currency_id" property="digitCurrencyId"
+			jdbcType="CHAR" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, nav_id, create_by, create_time, update_by, update_time, deleted_flag,
+		digit_currency_id
+	</sql>
+
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from t_nav_currency
+		where id = #{id,jdbcType=CHAR}
+	</select>
+	<insert id="insertSelectiveBatch" parameterType="ksd.binews.entity.NavCurrency">
+		insert into
+		t_nav_currency(id,nav_id,create_by,create_time,deleted_flag,digit_currency_id)
+		values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.id},
+			#{item.navId},
+			#{item.createBy},
+			#{item.createTime},
+			#{item.deletedFlag},
+			#{item.digitCurrencyId})
+		</foreach>
+	</insert>
+	<insert id="insertSelective" parameterType="ksd.binews.entity.NavCurrency">
+		insert into t_nav_currency
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="navId != null">
+				nav_id,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateBy != null">
+				update_by,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag,
+			</if>
+			<if test="digitCurrencyId != null">
+				digit_currency_id,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=CHAR},
+			</if>
+			<if test="navId != null">
+				#{navId,jdbcType=CHAR},
+			</if>
+			<if test="createBy != null">
+				#{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				#{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				#{deletedFlag,jdbcType=CHAR},
+			</if>
+			<if test="digitCurrencyId != null">
+				#{digitCurrencyId,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.NavCurrency">
+		update t_nav_currency
+		<set>
+			<if test="createBy != null">
+				create_by = #{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				update_by = #{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		<where>
+			<if test="id != null">
+				and id = #{id,jdbcType=CHAR}
+			</if>
+			<if test="navId != null">
+				and nav_id = #{navId,jdbcType=CHAR}
+			</if>
+		</where>
+	</update>
+</mapper>

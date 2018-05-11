@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.ChangeRankMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.ChangeRank" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="day_trade_amount" property="dayTradeAmount" jdbcType="DECIMAL" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="change_value" property="changeValue" jdbcType="DECIMAL" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    id, name, code, day_trade_amount, price, change_value
+  </sql>
+  
+  <select id="selectList" parameterType="java.util.Map" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"/>
+  	from t_change_rank
+  	<where>
+  		<if test="type != null">
+  			and type = #{type}
+  		</if>
+  		<if test="condition != null">
+  			and ${condition}
+  		</if>
+  	</where>
+  	<if test="order != null">
+  		order by ${order}
+  	</if>
+  	<if test="limit != null">
+  		limit ${limit}
+  	</if>
+  </select>
+</mapper>

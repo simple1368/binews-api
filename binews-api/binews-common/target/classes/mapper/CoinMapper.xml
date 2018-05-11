@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.CoinMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.Coin">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="en_name" property="enName" jdbcType="VARCHAR" />
+		<result column="cn_name" property="cnName" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="price" property="price" jdbcType="DOUBLE" />
+		<result column="day_rise" property="dayRise" jdbcType="REAL" />
+		<result column="day_trade_amount" property="dayTradeAmount" jdbcType="DOUBLE" />
+		<result column="market_value" property="marketValue" jdbcType="DOUBLE" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="CHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_by" property="updateBy" jdbcType="CHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+	</resultMap>
+	<resultMap id="BaseResultMapExpand" type="ksd.binews.entity.CoinExpand"
+		extends="BaseResultMap">
+		<result column="last_price" jdbcType="DECIMAL" property="lastPrice" />
+		<result column="flot_range" jdbcType="DECIMAL" property="flotRange" />
+		<result column="total_day" jdbcType="DECIMAL" property="totalDay" />
+		<result column="market_price" jdbcType="DECIMAL" property="marketPrice" />
+		<result column="p_name" jdbcType="DECIMAL" property="pName" />
+		<result column="pid" property="pId" jdbcType="VARCHAR" />
+		<result column="quote_currency" jdbcType="DECIMAL" property="quoteCurrency" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, en_name, cn_name, code, price, day_rise,
+		day_trade_amount, market_value, remark,
+		create_by, create_time,
+		update_by, update_time, deleted_flag
+	</sql>
+	<select id="selectByPrimaryKey" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_coin
+		where id = #{id,jdbcType=CHAR}
+	</select>
+	<select id="selectListByCondition" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_coin
+		<where>
+			<if test="id != null">
+				and id = #{id,jdbcType=CHAR}
+			</if>
+			<if test="deletedFlag != null">
+				and deleted_flag = #{deletedFlag,jdbcType=CHAR}
+			</if>
+		</where>
+	</select>
+	<select id="selectCoinSearchList" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select id,en_name,cn_name,code
+		from t_coin
+		<where>
+			<if test="keyword != null and keyword != ''">
+				and (cn_name like concat('%',#{keyword},'%')
+					or en_name like concat('%',#{keyword},'%')
+				)
+			</if>
+			<if test="deletedFlag != null">
+				and deleted_flag = #{deletedFlag,jdbcType=CHAR}
+			</if>
+		</where>
+		<if test="order != null">
+			order by ${order}
+		</if>
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<select id="selectCoinRanking" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select tb.*,@rank := @rank + 1 as rank
+		from (
+			select t1.id,t1.en_name,t1.cn_name,
+				sum(t3.total_day) as day_trade_amount,
+				avg(t3.last_price) as price
+			from t_coin t1
+			inner join (select id,coin_id from t_platform_coin) t2 on t2.coin_id = t1.id
+			inner join (select total_day,last_price,platform_coin_id from t_coin_market) t3 on t3.platform_coin_id = t2.id
+			where t1.deleted_flag='n'
+			group by t1.id
+			order by sum(t3.total_day) desc
+		) tb,(select @rank := 0) r
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<select id="selectCoinEssentialInfo" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select remark
+		from
+		t_coin
+		where id=#{id,jdbcType=CHAR}
+	</select>
+	<select id="selectCoinBanner" resultMap="BaseResultMapExpand">
+		select
+		a.id,a.en_name,a.cn_name,a.price
+		from t_coin a
+		where a.deleted_flag='n'
+		order by a.market_value desc
+		limit 6
+	</select>
+	<select id="selectCoinCount" resultType="java.lang.Integer">
+		select count(DISTINCT
+		code)
+		from t_coin
+		where deleted_flag='n'
+	</select>
+	<select id="selectPlatCoin" resultMap="BaseResultMapExpand"
+		parameterType="java.util.Map">
+		select *
+		from (
+			select tb.*,@rank := @rank + 1 as rank
+			from (
+				select t1.id,t1.en_name,t1.cn_name,t1.code,concat(t1.en_name,'/',t5.code) as quote_currency,
+					t4.last_price price,t4.flot_range day_rise,t4.total_day day_trade_amount,t4.update_time ,t4.create_time
+				from t_coin t1
+				inner join t_platform_coin t2 on t1.id=t2.coin_id and t2.deleted_flag='n'
+				inner join t_platform t3 on t2.platform_id=t3.id and t3.deleted_flag='n'
+				inner join t_coin_market t4 on t2.id = t4.platform_coin_id
+				inner join t_quote_currency t5 on t5.id=t2.quote_currency_id
+				where t1.deleted_flag='n' and t2.platform_id=#{platformId,jdbcType=CHAR}
+				order by t4.total_day desc
+			)tb,(select @rank := 0) r
+		)tab
+		<if test="orderBy != null">
+			order by ${orderBy} ${order}
+		</if>
+	</select>
+	<select id="selectCoinListCondition" resultMap="BaseResultMapExpand"
+		parameterType="ksd.binews.entity.Example">
+		select *
+		from (
+		select temp.*,@rank := @rank + 1 AS rank
+		FROM(
+		select
+		a.id,a.en_name ,a.cn_name ,a.price ,a.day_rise
+		,a.day_trade_amount,a.market_value
+		from t_coin a
+		group by a.code
+		order by a.market_value desc
+		) temp,
+		(SELECT @rank := 0 ) r
+		) tb
+		<if test="orderBy != null">
+			order by ${orderBy} ${order}
+		</if>
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<select id="selectCoinInfo" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		SELECT *
+		FROM(
+			SELECT *,@rank := @rank + 1 AS rank
+			FROM(
+				SELECT
+					a.id,a.en_name ,a.cn_name,a.price,
+					a.day_rise,a.day_trade_amount,
+					a.market_value,
+					a.code
+				FROM t_coin a
+				WHERE a.deleted_flag = 'n'
+				GROUP BY a.code
+				ORDER BY a.market_value desc
+			) tb,
+			( SELECT @rank := 0 ) r
+		) tab
+		where tab.id=#{id,jdbcType=CHAR}
+	</select>
+	<select id="selectMarketQuotation" parameterType="java.util.Map"
+		resultMap="BaseResultMapExpand">
+		select *
+		from (
+			select tb.*,@rank := @rank + 1 as rank
+			from (
+				SELECT d.id,d.name p_name,c.last_price price,c.flot_range day_rise,
+					c.total_day day_trade_amount,c.create_time,c.update_time,concat(a.en_name,'/',e.code) as quote_currency
+				from t_coin a
+				left join t_platform_coin b on b.coin_id=a.id
+				left join t_platform d on b.platform_id=d.id
+				left join t_coin_market c on b.id=c.platform_coin_id
+				left join t_quote_currency e on e.id = b.quote_currency_id
+				where a.id=#{id,jdbcType=VARCHAR}
+					and a.deleted_flag='n' and b.deleted_flag='n' and d.deleted_flag='n'
+				order by c.total_day desc
+			) tb,(select @rank := 0) r
+		)tab
+		group by id
+		<if test="orderBy != null">
+			order by ${orderBy} ${order}
+		</if>
+	</select>
+
+	<update id="deleteByPrimaryKey" parameterType="java.lang.String">
+		update t_coin
+		<set>
+			deleted_flag='y',
+			<if test="updateTime != null">
+				update_time=#{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+	<insert id="insertCoinBatch" parameterType="ksd.binews.entity.Coin">
+		insert into t_coin(id,en_name,cn_name,code,create_time,deleted_flag)
+		values
+		<foreach collection="list" index="index" item="item"
+			separator=",">
+			(
+			#{item.id,jdbcType=CHAR},
+			#{item.enName,jdbcType=VARCHAR},
+			#{item.cnName,jdbcType=VARCHAR},
+			#{item.code,jdbcType=VARCHAR},
+			#{item.createTime,jdbcType=TIMESTAMP},
+			#{item.deletedFlag,jdbcType=CHAR}
+			)
+		</foreach>
+	</insert>
+	<insert id="insertSelective" parameterType="ksd.binews.entity.Coin">
+		insert into t_coin
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="enName != null">
+				en_name,
+			</if>
+			<if test="cnName != null">
+				cn_name,
+			</if>
+			<if test="code != null">
+				code,
+			</if>
+			<if test="price != null">
+				price,
+			</if>
+			<if test="dayRise != null">
+				day_rise,
+			</if>
+			<if test="dayTradeAmount != null">
+				day_trade_amount,
+			</if>
+			<if test="marketValue != null">
+				market_value,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateBy != null">
+				update_by,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=CHAR},
+			</if>
+			<if test="enName != null">
+				#{enName,jdbcType=VARCHAR},
+			</if>
+			<if test="cnName != null">
+				#{cnName,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				#{code,jdbcType=VARCHAR},
+			</if>
+			<if test="price != null">
+				#{price,jdbcType=DOUBLE},
+			</if>
+			<if test="dayRise != null">
+				#{dayRise,jdbcType=REAL},
+			</if>
+			<if test="dayTradeAmount != null">
+				#{dayTradeAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="marketValue != null">
+				#{marketValue,jdbcType=DOUBLE},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="createBy != null">
+				#{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				#{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				#{deletedFlag,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateCoinBatch" parameterType="ksd.binews.entity.Coin">
+		update t_coin
+		<trim prefix="set" suffixOverrides=",">
+			<trim prefix="price = case" suffix="end,">
+				<foreach collection="list" item="item" index="index">
+					<if test="item.price != null">
+						when id=#{item.id} then #{item.price}
+					</if>
+					<if test="item.price == null">
+						when id=#{item.id} then t_coin.price
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="day_rise = case" suffix="end,">
+				<foreach collection="list" item="item" index="index">
+					<if test="item.dayRise != null">
+						when id=#{item.id} then #{item.dayRise}
+					</if>
+					<if test="item.dayRise == null">
+						when id=#{item.id} then t_coin.day_rise
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="day_trade_amount = case" suffix="end,">
+				<foreach collection="list" item="item" index="index">
+					<if test="item.dayTradeAmount != null">
+						when id=#{item.id} then #{item.dayTradeAmount}
+					</if>
+					<if test="item.dayTradeAmount == null">
+						when id=#{item.id} then t_coin.day_trade_amount
+					</if>
+				</foreach>
+			</trim>
+			<trim prefix="update_time = case" suffix="end,">
+				<foreach collection="list" item="item" index="index">
+					<if test="item.updateTime != null">
+						when id=#{item.id} then #{item.updateTime}
+					</if>
+					<if test="item.updateTime == null">
+						when id=#{item.id} then t_coin.update_time
+					</if>
+				</foreach>
+			</trim>
+		</trim>
+		where id in
+		<foreach collection="list" index="index" item="item"
+			separator="," open="(" close=")">
+			#{item.id,jdbcType=CHAR}
+		</foreach>
+	</update>
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Coin">
+		update t_coin
+		<set>
+			<if test="enName != null">
+				en_name = #{enName,jdbcType=VARCHAR},
+			</if>
+			<if test="cnName != null">
+				cn_name = #{cnName,jdbcType=VARCHAR},
+			</if>
+			<!-- <if test="price != null">
+				price = #{price,jdbcType=DOUBLE},
+			</if>
+			<if test="dayRise != null">
+				day_rise = #{dayRise,jdbcType=REAL},
+			</if>
+			<if test="dayTradeAmount != null">
+				day_trade_amount = #{dayTradeAmount,jdbcType=DOUBLE},
+			</if> -->
+			<if test="marketValue != null">
+				market_value = #{marketValue,jdbcType=DOUBLE},
+			</if>
+			<if test="remark != null">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="updateBy != null">
+				update_by = #{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+</mapper>

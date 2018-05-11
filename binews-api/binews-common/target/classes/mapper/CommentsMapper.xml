@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.CommentsMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.Comments">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="news_id" property="newsId" jdbcType="CHAR" />
+		<result column="content" property="content" jdbcType="VARCHAR" />
+		<result column="comment_by" property="commentBy" jdbcType="CHAR" />
+		<result column="comment_time" property="commentTime" jdbcType="TIMESTAMP" />
+		<result column="show_flag" property="showFlag" jdbcType="CHAR" />
+		<result column="audit_status" property="auditStatus" jdbcType="INTEGER" />
+		<result column="audit_content" property="auditContent" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+	</resultMap>
+	<resultMap type="ksd.binews.entity.CommentsExpand" id="BaseResultMapExtends" extends="BaseResultMap">
+		<result column="news_title" property="newsTitle" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, news_id, content, comment_by, comment_time,show_flag, audit_status,audit_content, create_time, update_time,
+		deleted_flag
+	</sql>
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT
+		<include refid="Base_Column_List" />
+		FROM t_comments
+		<where>
+			id=#{id,jdbcType=VARCHAR}
+		</where>
+	</select>
+
+	<select id="selectByNews" parameterType="java.lang.String" resultMap="BaseResultMap">
+		SELECT a.id, a.news_id, a.content,b.mobile comment_by, a.comment_time
+		FROM t_comments a
+		left join t_user b on a.comment_by=b.id and b.deleted_flag='n'
+		left join t_news c on c.id=a.news_id
+		<where>
+			a.news_id=#{newsId,jdbcType=VARCHAR} and a.deleted_flag='n'
+			and a.show_flag='y' and c.deleted_flag='n'
+		</where>
+		order by a.comment_time desc
+	</select>
+	<select id="selectListCondition" parameterType="ksd.binews.entity.CommentsExpand" resultMap="BaseResultMapExtends">
+		select a.id, a.news_id, c.title news_title, a.show_flag, a.content,b.mobile comment_by, a.comment_time
+		FROM t_comments a
+		left join t_user b on a.comment_by=b.id and b.deleted_flag='n'
+		left join t_news c on c.id = a.news_id
+		<where>
+			lower(c.deleted_flag)='n'
+			<if test="showFlag != null and showFlag != ''">
+				and a.show_flag=#{showFlag}
+			</if>
+			<if test="auditStatus != null">
+				and a.audit_status=#{auditStatus}
+			</if>
+			<if test="deletedFlag != null">
+				and lower(a.deleted_flag)=#{deletedFlag}
+			</if>
+			<if test="newsTitle != null and newsTitle != ''">
+				and c.title like concat('%',#{newsTitle},'%') 
+			</if>
+			<if test="begin != null and begin != ''">
+				and DATE_FORMAT(a.comment_time,'%Y-%m-%d %H:%i') <![CDATA[>=]]> DATE_FORMAT(#{begin},'%Y-%m-%d %H:%i')
+			</if>
+			<if test="end != null and end != ''">
+				and DATE_FORMAT(a.comment_time,'%Y-%m-%d %H:%i') <![CDATA[<=]]> DATE_FORMAT(#{end},'%Y-%m-%d %H:%i')
+			</if>
+			<if test="commentBy != null and commentBy != ''">
+				and b.mobile like concat('%',#{commentBy},'%')
+			</if>
+		</where>
+	</select>
+	<insert id="insertComments" parameterType="ksd.binews.entity.Comments">
+		INSERT INTO t_comments
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			id,
+			<if test="newsId != null and newsId != ''">
+				news_id,
+			</if>
+			<if test="content != null and content != ''">
+				content,
+			</if>
+			<if test="commentBy != null and commentBy != ''">
+				comment_by,
+			</if>
+			<if test="commentTime != null">
+				comment_time,
+			</if>
+			<if test="showFlag != null">
+				show_flag,
+			</if>
+			<if test="auditStatus != null">
+				audit_status,
+			</if>
+			<if test="auditContent != null">
+				audit_content,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="deletedFlag != null and deletedFlag != ''">
+				deleted_flag,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			#{id,jdbcType=VARCHAR},
+			<if test="newsId != null and newsId != ''">
+				#{newsId,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null and content != ''">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="commentBy != null and commentBy != ''">
+				#{commentBy,jdbcType=VARCHAR},
+			</if>
+			<if test="commentTime != null">
+				#{commentTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="showFlag != null">
+				#{showFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="auditStatus != null">
+				#{auditStatus,jdbcType=INTEGER},
+			</if>
+			<if test="auditContent != null">
+				#{auditContent,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null and deletedFlag != ''">
+				#{deletedFlag,jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateComments" parameterType="ksd.binews.entity.Comments">
+		update t_comments
+		<set>
+			<if test="showFlag != null">
+				show_flag=#{showFlag},
+			</if>
+			<if test="auditStatus != null">
+				audit_status=#{auditStatus},
+			</if>
+			<if test="auditContent != null">
+				audit_content=#{auditContent},
+			</if>
+			<if test="updateTime != null">
+				update_time=#{updateTime},
+			</if>
+		</set>
+		where id=#{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByPrimaryKey" parameterType="ksd.binews.entity.Comments">
+		UPDATE t_comments
+		<set>
+			deleted_flag='y',
+			<if test="updateTime != null">
+				update_time=#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		<where>
+			id=#{id,jdbcType=VARCHAR}
+		</where>
+	</update>
+</mapper>

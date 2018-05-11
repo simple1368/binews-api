@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksd.binews.mapper.PlatformMapper">
+	<resultMap id="BaseResultMap" type="ksd.binews.entity.Platform">
+		<id column="id" property="id" jdbcType="CHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="logo" property="logo" jdbcType="VARCHAR" />
+		<result column="day_trade_amount" property="dayTradeAmount" jdbcType="DOUBLE" />
+		<result column="trade_type" property="tradeType" jdbcType="VARCHAR" />
+		<result column="trade_base" property="tradeBase" jdbcType="VARCHAR" />
+		<result column="bit_count" property="bitCount" jdbcType="INTEGER" />
+		<result column="trade_pair_count" property="tradePairCount" jdbcType="INTEGER" />
+		<result column="area" property="area" jdbcType="VARCHAR" />
+		<result column="offical_site" property="officalSite" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="CHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_by" property="updateBy" jdbcType="CHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+		<result column="rank" property="rank" jdbcType="INTEGER" />
+		<result column="currencies" property="currencies" jdbcType="VARCHAR" />
+		<result column="logo_url" property="logoUrl" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, name, code, logo, day_trade_amount, trade_type,
+		trade_base, bit_count, trade_pair_count,
+		area, offical_site, remark, create_by, create_time, update_by, update_time,
+		deleted_flag
+	</sql>
+	<sql id="Base_Column_List_extends">
+		t1.id, name, t1.code, t1.logo, t1.day_trade_amount, t1.trade_type,
+		t1.trade_base, t1.bit_count, t1.trade_pair_count,
+		t1.area, t1.offical_site, t1.remark, t1.create_by, t1.create_time, t1.update_by, t1.update_time,
+		t1.deleted_flag
+	</sql>
+	<select id="selectByPrimaryKey" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List_extends" />,t2.uri as logo_url
+		from t_platform t1
+		left join t_file_record t2 on t1.logo = t2.id
+		where t1.id = #{id,jdbcType=CHAR}
+	</select>
+	<select id="selectPlatformRanking" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select tb.*,@rank := @rank + 1 as rank
+		from (
+			select id,name,day_trade_amount
+			from t_platform
+			where deleted_flag='n'
+			order by day_trade_amount desc
+		)tb,(select @rank := 0)r
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<select id="selectListCondition" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List_extends" />,t2.uri as logo_url
+		from t_platform t1
+		left join t_file_record t2 on t1.logo = t2.id
+		<where>
+			<if test="id != null">
+				and t1.id = #{id,jdbcType=CHAR}
+			</if>
+			<if test="deletedFlag != null">
+				and t1.deleted_flag = #{deletedFlag,jdbcType=CHAR}
+			</if>
+		</where>
+	</select>
+	<select id="selectPlatformDetail" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select tb1.*
+		from(
+			select tb.*,@rank := @rank + 1 as rank
+			from (
+				select id,name,day_trade_amount,trade_type,area,offical_site
+				from t_platform
+				order by day_trade_amount desc
+			) tb,
+			(select @rank := 0) r
+		) tb1
+		where tb1.id = #{id,jdbcType=CHAR}
+	</select>
+	<select id="selectPlatformRemark" resultMap="BaseResultMap"
+		parameterType="java.lang.String">
+		select remark
+		from t_platform
+		where id=#{id,jdbcType=CHAR}
+	</select>
+	<select id="selectPlatformCount" resultType="java.lang.Integer">
+		select
+		count(DISTINCT code)
+		from t_platform
+		where deleted_flag='n'
+	</select>
+	<select id="selectPlatformSearchList" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select id,name
+		from t_platform
+		<where>
+			<if test="keyword != null and keyword != ''">
+				and name like concat('%',#{keyword},'%')
+			</if>
+			<if test="deletedFlag != null">
+				and deleted_flag = #{deletedFlag,jdbcType=CHAR}
+			</if>
+		</where>
+		<if test="order != null">
+			order by ${order}
+		</if>
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<select id="selectPlatformListCondition" parameterType="java.util.Map"
+		resultMap="BaseResultMap">
+		select tab.*,GROUP_CONCAT(DISTINCT t2.en_name order by t2.day_trade_amount desc) as currencies
+			,count(DISTINCT t2.en_name) as bit_count
+			,t4.uri as logo_url
+		from (
+			select tb.*,@rank := @rank + 1 as rank
+			from (
+				select id,logo,name ,day_trade_amount ,trade_type,trade_pair_count
+				from t_platform
+				where deleted_flag='n'
+				order by day_trade_amount desc
+			) tb,
+			( SELECT @rank := 0 ) r
+		) tab
+		left join (select platform_id,coin_id,quote_currency_id from t_platform_coin) t1 on tab.id = t1.platform_id
+		left join (select id,en_name,day_trade_amount,code from t_coin) t2 on t1.coin_id = t2.id
+		left join (select id,code from t_quote_currency) t3 on t1.quote_currency_id = t3.id
+		left join t_file_record t4 on tab.logo = t4.id
+		<where>
+			<if test="supportCurrency != null and supportCurrency != ''">
+				and t2.code=#{supportCurrency}
+			</if>
+			<if test="tradeBase != null and tradeBase != ''">
+				and t3.code=#{tradeBase}
+			</if>
+			<if test="tradeType != null and tradeType != ''">
+				and tab.trade_type like concat('%',#{tradeType},'%') 
+			</if>
+		</where>
+		group by tab.id
+		<if test="limit != null">
+			limit ${limit}
+		</if>
+	</select>
+	<update id="deleteByPrimaryKey" parameterType="java.lang.String">
+		update t_platform
+		<set>
+			deleted_flag='y',
+			<if test="updateTime != null">
+				update_time=#{updateTime,jdbcType=TIMESTAMP}
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+	<insert id="insertSelective" parameterType="ksd.binews.entity.Platform">
+		insert into t_platform
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="code != null">
+				code,
+			</if>
+			<if test="logo != null">
+				logo,
+			</if>
+			<if test="dayTradeAmount != null">
+				day_trade_amount,
+			</if>
+			<if test="tradeType != null">
+				trade_type,
+			</if>
+			<if test="tradeBase != null">
+				trade_base,
+			</if>
+			<if test="bitCount != null">
+				bit_count,
+			</if>
+			<if test="tradePairCount != null">
+				trade_pair_count,
+			</if>
+			<if test="area != null">
+				area,
+			</if>
+			<if test="officalSite != null">
+				offical_site,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateBy != null">
+				update_by,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=CHAR},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="code != null">
+				#{code,jdbcType=VARCHAR},
+			</if>
+			<if test="logo != null">
+				#{logo,jdbcType=VARCHAR},
+			</if>
+			<if test="dayTradeAmount != null">
+				#{dayTradeAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="tradeType != null">
+				#{tradeType,jdbcType=VARCHAR},
+			</if>
+			<if test="tradeBase != null">
+				#{tradeBase,jdbcType=VARCHAR},
+			</if>
+			<if test="bitCount != null">
+				#{bitCount,jdbcType=INTEGER},
+			</if>
+			<if test="tradePairCount != null">
+				#{tradePairCount,jdbcType=INTEGER},
+			</if>
+			<if test="area != null">
+				#{area,jdbcType=VARCHAR},
+			</if>
+			<if test="officalSite != null">
+				#{officalSite,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="createBy != null">
+				#{createBy,jdbcType=CHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateBy != null">
+				#{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				#{deletedFlag,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateTotalDay" parameterType="java.lang.String">
+		update t_platform set day_trade_amount=(select sum(t2.total_day)
+		from t_platform_coin t1
+		left join t_coin_market t2 on t2.platform_coin_id = t1.id
+		where t1.platform_id=#{id} and t1.deleted_flag='n')
+		where id=#{id}
+	</update>
+	<update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Platform">
+		update t_platform
+		<set>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="logo != null">
+				logo = #{logo,jdbcType=VARCHAR},
+			</if>
+			<if test="dayTradeAmount != null">
+				day_trade_amount = #{dayTradeAmount,jdbcType=DOUBLE},
+			</if>
+			<if test="tradeType != null">
+				trade_type = #{tradeType,jdbcType=VARCHAR},
+			</if>
+			<if test="tradeBase != null">
+				trade_base = #{tradeBase,jdbcType=VARCHAR},
+			</if>
+			<if test="bitCount != null">
+				bit_count = #{bitCount,jdbcType=INTEGER},
+			</if>
+			<if test="tradePairCount != null">
+				trade_pair_count = #{tradePairCount,jdbcType=INTEGER},
+			</if>
+			<if test="area != null">
+				area = #{area,jdbcType=VARCHAR},
+			</if>
+			<if test="officalSite != null">
+				offical_site = #{officalSite,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				remark = #{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="updateBy != null">
+				update_by = #{updateBy,jdbcType=CHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="deletedFlag != null">
+				deleted_flag = #{deletedFlag,jdbcType=CHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=CHAR}
+	</update>
+</mapper>

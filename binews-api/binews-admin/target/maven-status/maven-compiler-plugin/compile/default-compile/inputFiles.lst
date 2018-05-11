@@ -1,0 +1,16 @@
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\common\WebAppConfig.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\CommentsController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\NavController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\CoinController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\common\LoggerAspect.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\interceptor\AuthorizationInterceptor.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\GeneralConfig.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\PlatformController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\Application.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\UploadController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\AdminController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\GuideArticleController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\common\JacksonConfig.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\NewsController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\controller\DeepnewsController.java
+D:\MyEclipse 2016 CI\workspace\binews-api\binews-admin\src\main\java\ksd\binews\resolver\CurrentUserMethodArgumentResolver.java

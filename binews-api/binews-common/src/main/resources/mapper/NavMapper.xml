@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ksd.binews.mapper.NavMapper" >
+  <resultMap id="BaseResultMap" type="ksd.binews.entity.Nav" >
+    <id column="id" property="id" jdbcType="CHAR" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="logo" property="logo" jdbcType="CHAR" />
+    <result column="logo_url" property="logoUrl" jdbcType="VARCHAR" />
+    <result column="country" property="country" jdbcType="VARCHAR" />
+    <result column="trade_type" property="tradeType" jdbcType="VARCHAR" />
+    <result column="trade_made" property="tradeMade" jdbcType="VARCHAR" />
+    <result column="identity_type" property="identityType" jdbcType="VARCHAR" />
+    <result column="tech_type" property="techType" jdbcType="VARCHAR" />
+    <result column="support_num" property="supportNum" jdbcType="INTEGER" />
+    <result column="support_lang" property="supportLang" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="mark" property="mark" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="CHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="CHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="deleted_flag" property="deletedFlag" jdbcType="CHAR" />
+  </resultMap>
+  <resultMap id="BaseResultMapExpand" type="ksd.binews.entity.NavExpand" extends="BaseResultMap">
+  	<result column="currency" property="currency" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, title, logo, country, support_num, support_lang, type, url, mark, create_by, create_time, 
+    update_by, update_time, deleted_flag,trade_type,trade_made,identity_type,tech_type
+  </sql>
+  <sql id="Base_Column_List_extend" >
+    a.id, a.title, a.logo, a.country, a.support_num, a.support_lang, a.type, a.mark
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from t_nav
+    where id = #{id,jdbcType=CHAR}
+  </select>
+  <select id="selectDetailByIdFront" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select a.id,a.title,a.logo,b.uri as logo_url, a.url
+    from t_nav a
+    left join t_file_record b on a.logo=b.id
+    where a.id = #{id,jdbcType=CHAR}
+  </select>
+  <select id="selectDetailById" resultMap="BaseResultMapExpand" parameterType="java.lang.String" >
+    select a.id, a.title, a.logo,c.uri as logo_url, a.country, a.support_num, a.support_lang, a.type, a.mark,
+    	a.url,a.trade_type,a.trade_made,a.identity_type,a.tech_type,group_concat(b.digit_currency_id) as currency
+    from t_nav a
+    left join t_nav_currency b on a.id=b.nav_id and b.deleted_flag = 'n'
+    left join t_file_record c on a.logo=c.id
+    where a.id = #{id,jdbcType=CHAR}
+    group by a.id
+  </select>
+  <select id="selectNavCount" resultType="java.util.Map">
+	select * 
+	from (select count(0) as tradeMade1 from t_nav where type=1 and trade_made=1 and deleted_flag='n') a,
+	(select count(0) as tradeMade2 from t_nav where type=1 and trade_made=2 and deleted_flag='n') b,
+	(select count(0) as tradeMade3 from t_nav where type=1 and trade_made=3 and deleted_flag='n') c,
+	(select count(0) as tradeMade4 from t_nav where type=1 and trade_made=4 and deleted_flag='n') d,
+	(select count(0) as identityType1 from t_nav where type=2 and identity_type=1 and deleted_flag='n') e,
+	(select count(0) as identityType2 from t_nav where type=2 and identity_type=2 and deleted_flag='n') f,
+	(select count(0) as articleType1 from t_guide_article where article_type=1 and deleted_flag='n') g,
+	(select count(0) as articleType2 from t_guide_article where article_type=2 and deleted_flag='n') h
+  </select>
+  <select id="selectList" resultMap="BaseResultMap" parameterType="ksd.binews.entity.NavExpand">
+  	select 
+    <include refid="Base_Column_List_extend" />,d.uri as logo_url
+    from t_nav a
+    left join t_nav_currency b on a.id=b.nav_id and lower(b.deleted_flag) = 'n'
+    left join t_digit_currency c on c.id=b.digit_currency_id and lower(c.deleted_flag)='n'
+    left join t_file_record d on a.logo=d.id
+    <where>
+    	<if test="type != null">
+    		and a.type = #{type}
+    	</if>
+    	<if test="deletedFlag != null and deletedFlag != ''">
+    		and lower(a.deleted_flag) = lower(#{deletedFlag})
+    	</if>
+    	<if test="country != null and country != ''">
+    		and a.country like concat('%',#{country},'%') 
+    	</if>
+    	<if test="tradeType != null and tradeType != ''">
+    		and a.trade_type like concat('%',#{tradeType},'%')
+    	</if>
+    	<if test="supportLang != null and supportLang != ''">
+    		and a.support_lang like concat('%',#{supportLang},'%')
+    	</if>
+    	<if test="tradeMade != null and tradeMade != ''">
+    		and a.trade_made like concat('%',#{tradeMade},'%')
+    	</if>
+    	<if test="identityType != null and identityType != ''">
+    		and a.identity_type like concat('%',#{identityType},'%')
+    	</if>
+    	<if test="techType != null and techType != ''">
+    		and a.tech_type like concat('%',#{techType},'%')
+    	</if>
+    	<if test="currency != null and currency != ''">
+    		and c.id like concat('%',#{currency},'%')
+    	</if>
+    </where>
+    group by a.id
+    order by a.create_time
+  </select>
+  <insert id="insertSelective" parameterType="ksd.binews.entity.Nav" >
+    insert into t_nav
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="title != null" >
+        title,
+      </if>
+      <if test="logo != null" >
+        logo,
+      </if>
+      <if test="country != null" >
+        country,
+      </if>
+      <if test="tradeType != null" >
+        trade_type,
+      </if>
+      <if test="tradeMade != null" >
+        trade_made,
+      </if>
+      <if test="identityType != null" >
+        identity_type,
+      </if>
+      <if test="techType != null" >
+        tech_type,
+      </if>
+      <if test="supportNum != null" >
+        support_num,
+      </if>
+      <if test="supportLang != null" >
+        support_lang,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="url != null" >
+        url,
+      </if>
+      <if test="mark != null" >
+        mark,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="updateBy != null" >
+        update_by,
+      </if>
+      <if test="updateTime != null" >
+        update_time,
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=CHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="logo != null" >
+        #{logo,jdbcType=CHAR},
+      </if>
+      <if test="country != null" >
+        #{country,jdbcType=VARCHAR},
+      </if>
+      <if test="tradeType != null" >
+        #{tradeType,jdbcType=VARCHAR},
+      </if>
+      <if test="tradeMade != null" >
+        #{tradeMade,jdbcType=VARCHAR},
+      </if>
+      <if test="identityType != null" >
+        #{identityType,jdbcType=VARCHAR},
+      </if>
+      <if test="techType != null" >
+        #{techType,jdbcType=VARCHAR},
+      </if>
+      <if test="supportNum != null" >
+        #{supportNum,jdbcType=INTEGER},
+      </if>
+      <if test="supportLang != null" >
+        #{supportLang,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="url != null" >
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null" >
+        #{mark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        #{updateBy,jdbcType=CHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByPrimaryKeySelective" parameterType="ksd.binews.entity.Nav" >
+    update t_nav
+    <set >
+      <if test="title != null" >
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="logo != null" >
+        logo = #{logo,jdbcType=CHAR},
+      </if>
+      <if test="country != null" >
+        country = #{country,jdbcType=VARCHAR},
+      </if>
+      <if test="tradeType != null" >
+        trade_type = #{tradeType,jdbcType=VARCHAR},
+      </if>
+      <if test="tradeMade != null" >
+        trade_made = #{tradeMade,jdbcType=VARCHAR},
+      </if>
+      <if test="identityType != null" >
+        identity_type = #{identityType,jdbcType=VARCHAR},
+      </if>
+      <if test="techType != null" >
+        tech_type = #{techType,jdbcType=VARCHAR},
+      </if>
+      <if test="supportNum != null" >
+        support_num = #{supportNum,jdbcType=INTEGER},
+      </if>
+      <if test="supportLang != null" >
+        support_lang = #{supportLang,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="url != null" >
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="mark != null" >
+        mark = #{mark,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null" >
+        create_by = #{createBy,jdbcType=CHAR},
+      </if>
+      <if test="createTime != null" >
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateBy != null" >
+        update_by = #{updateBy,jdbcType=CHAR},
+      </if>
+      <if test="updateTime != null" >
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="deletedFlag != null" >
+        deleted_flag = #{deletedFlag,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=CHAR}
+  </update>
+</mapper>
